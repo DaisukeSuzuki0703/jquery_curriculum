@@ -32,7 +32,49 @@
       // 下記URLにAPIの仕様が載ってるいので、ブラウザで開いて参考にしてください。
       // https://webservice.rakuten.co.jp/api/bookstotalsearch/
       //
-      //
+      $(function(){
+      $('#js-search-button').click(function(){
+        var keyword = $('#js-search-word').val();
+
+      $.ajax({
+        url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+        type: 'GET',
+        datatype: 'json',
+        data: {
+          // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
+          applicationId: '1019399324990976605', // (今回はこのIDを使用してください)
+          booksGenreId: '001',
+          keyword: keyword,
+          hits: 20
+        }
+      }).done(function(data) {
+        if(data.count > 0) {
+          $("ul").empty();
+            $.each(data.Items,function(i,item){
+              var itemUrl = item.Item.itemUrl;
+              var mediumImageUrl = item.Item.mediumImageUrl;
+              var title = item.Item.title;
+              var author = item.Item.author;
+              var publisherName = item.Item.publisherName;
+
+              var list = $("<li class='lists__item'>" +
+                "<div class='lists__item__inner'>" +
+                "<a href='" + itemUrl + "'class='lists__item__link' target='_blank'>" +
+                "<img src='" + mediumImageUrl + "' class='lists__item__img' alt>" +
+                "<p class='lists__item__detail'>作品名：　" + title + '</p>' +
+                "<p class='lists__item__detail'>作者　：　" + author + '</p>' +
+                "<p class='lists__item__detail'>出版社：　" + publisherName + '</p>' + '</a>' +'</div>' + '</li>');
+              $('ul').prepend(list);
+            })
+          } else {
+            $("ul").empty();
+            $('.lists').before('<div class="coment"></div>')
+            coment = $('.coment');
+            coment.html('<p class="message">検索結果が見つかりませんでした。</p>');
+          }
+      });
+     });
+    });
       // [使うメソッド]
       // $.each(配列, function functionName() {}) 配列に対しての繰り返し処理
       // $.ajax({}) 外部ファイルやURLに対してデータをリクエストすることができます。
@@ -65,9 +107,6 @@
       //    </a>
       //  </div>
       // </li>
-      //
-      //
-      //
     </script>
   </body>
 </html>
