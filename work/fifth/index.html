@@ -85,14 +85,14 @@
     <script src="../../common/js/jquery.js"></script>
     <script>
       $(function() {
-        $(".select").change(function(){ // .change()使用
-          var v=$(this).val(); // .val()使用
-          if(v=="all"){
+        $(".select").change(function(){ // .change()使用  change()を使うと、いずれかのラジオボタンなどがクリックして内容が変化した際に瞬間に何らかのイベント処理を自動的に実行することが出来るわけです。
+          var v = $(this).val(); // .val()使用
+          if(v == "all"){
             $('.list li').each(function(){
-              $(this).show() }); // .each()使用
+              $(this).show() }); // .each()使用  allの場合、全て表示するので、liを表示とした。
           } else {
             $('.list li').each(function(){
-              if($(this).data("category-type")==v){ // .data()使用
+              if($(this).data("category-type") == v){ // .data()使用
                 $(this).show(); // .show()使用
               } else {
                 $(this).hide(); // .hide()使用
@@ -100,7 +100,11 @@
             });
           }
         });
-});
+      });
+      // eachメソッドが何を回しているのか？
+      // .listのliのindexの配列、オブジェクトで回している。
+
+
 
       // 今回やるのはソート機能です。
       // selectボックスをクリックして言語を選び、その言語と関係のあるリストだけが表示されるプログラムです。
