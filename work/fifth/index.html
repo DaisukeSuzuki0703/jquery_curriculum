@@ -85,23 +85,24 @@
     <script src="../../common/js/jquery.js"></script>
     <script>
       $(function() {
-        $(".select").change(function(){ // .change()使用  change()を使うと、いずれかのラジオボタンなどがクリックして内容が変化した際に瞬間に何らかのイベント処理を自動的に実行することが出来るわけです。
-          var v = $(this).val(); // .val()使用
-          if(v == "all"){
-            $('.list li').each(function(){
-              $(this).show() }); // .each()使用  allの場合、全て表示するので、liを表示とした。
+        $(".select").change(function(){ // .change()使用  change()を使うと、いずれかのラジオボタンなどがクリックして要素の内容が変化しΩた際に瞬間に何らかのイベント処理を自動的に実行することが出来る。
+          var selectValue = $(this).val(); // .val()使用（HTMLタグ内に記述されているvalue属性を取得したり変更することができるメソッド）
+          if(selectValue == "all"){
+            $(function(){
+              $('.list li').show() }); // .each()使用  allの場合、全て表示するので、liを表示とした。
           } else {
-            $('.list li').each(function(){
-              if($(this).data("category-type") == v){ // .data()使用
-                $(this).show(); // .show()使用
+            $('.list li').each(function(index ,element){//.each(function(index ,element){}というようになっておりセレクターで指定した配列のindexと要素(Element)を引数で取っている。
+              if($(element).data("category-type") == selectValue){ // .data()使用
+                $(element).show(); // .show()使用thisでもできるが、eachメソッドに搭載されている物をしようした。
               } else {
-                $(this).hide(); // .hide()使用
+                $(element).hide(); // .hide()使用
               }
             });
           }
         });
       });
       // eachメソッドが何を回しているのか？
+      // →所得したセレクタのindexを回している。今回は9回。
       // .listのliのindexの配列、オブジェクトで回している。
 
 
