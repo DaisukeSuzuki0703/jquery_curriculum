@@ -26,55 +26,133 @@
     </div>
     <script src="../../common/js/jquery.js"></script>
     <script>
-      // 楽天ブックスの総合検索APIを使って製作してください。
-      // answerの挙動を良く見てね！
-      //
-      // 下記URLにAPIの仕様が載ってるいので、ブラウザで開いて参考にしてください。
-      // https://webservice.rakuten.co.jp/api/bookstotalsearch/
-      //
+      //現在の課題、
+      //・検索した際の見本と同じような検索になっているか？
       $(function(){
-      $('#js-search-button').click(function(){
-        var keyword = $('#js-search-word').val();
+        var pageNum = 0;//検索ボタンをクリックした時に取得するページの変数をグローバル変数で取得。
+        var prevWord = "";//前回検索したワードを変数であらかじめ取得。
+      $('#js-search-button').click(function(){//ボタンをクリックした時に発生する処理を描く。}
+        var keyword = $('#js-search-word').val();//入力欄に入力された値のvalue属性を取得。
+        $(".coment").remove();//クリックした際にエラー文書を消す処理。
+        pageNum = countUp();//pageNumはcountUpという処理を行うものと設定。
 
-      $.ajax({
+        function countUp() {//関数countUp()はこういうものだと定義。
+        pageNum += 1;//1ページずつ増える事。
+        return pageNum;//+になった値が上に返る
+        }
+        //前回検索したワードを先ほど設定した変数と同じに設定。
+        if(prevWord !== keyword) {//前回検索したワードと新しく検索エリアに入力したものが違う場合。（違うワードで検索ボタンを押された時。）
+            pageNum = 1;//ページの変化はなく、20件取得してくるというもの。
+            $("ul").empty();//違うワードで検索した時に前回検索していたものを消す処理。（消さないと、どんどん積み重なっていってしまう。）
+            prevWord = keyword;////検索された前の値を取得　関数の外に出さないのは、他のワードで検索した場合もページが増えていってしまうため。
+          }
+
+        // 入力
+      $.ajax({//「JavaScriptで非同期通信をするもの」非同期通信とは、片方から情報の一部分のリクエストをだし受け取るもの。両方オンラインで同期通信するものとは違い、早い。
         url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-        type: 'GET',
-        datatype: 'json',
+        type: 'GET',//GETはURLに含まれてリクエストを行う。POSTはbodyに含まれてリクエストされる。
+        datatype: 'json',//オブジェクト表記構文のサブセットとなっていて見てわかりやすいもの。
         data: {
           // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
           applicationId: '1019399324990976605', // (今回はこのIDを使用してください)
           booksGenreId: '001',
-          keyword: keyword,
-          hits: 20
+          keyword: keyword,//リクエストで送ったものの値。
+          hits: 20,//取得する件数。
+          timeout: 30000,//何も動作がなかった際に自動的に越族をしないようにするためのミリ秒数。ここでは、30秒。
+          page: pageNum,////リクエストを送り、帰ってくるページ数。
         }
-      }).done(function(data) {
-        if(data.count > 0) {
-          $("ul").empty();
-            $.each(data.Items,function(i,item){
-              var itemUrl = item.Item.itemUrl;
-              var mediumImageUrl = item.Item.mediumImageUrl;
-              var title = item.Item.title;
-              var author = item.Item.author;
-              var publisherName = item.Item.publisherName;
-
-              var list = $("<li class='lists__item'>" +
+        // 出力
+      }).done(function(data) {//出力が成功した時の処理。dataという引数を設定。
+        // console.log(data);
+        // 通信成功の時
+          if(data.count > 0) {//成功した時のcountのvalueが一つ以上あった時の処理。
+            var list = "";//表示する本の内容を変数として設定。
+            $.each(data.Items,function(i,item){//data.Itemのvalueに対して、function(index[20] ,element)でeachメソのッドで中の内容をループ処理。
+              var itemUrl = item.Item.itemUrl;//取得する要素のItemkeyのURLを変数として設定。
+              var mediumImageUrl = item.Item.mediumImageUrl;//取得してくる要素のItemkeyの画像を変数で設定。
+              var title = item.Item.title;//取得してくる要素のItemkeyの本のタイトル名を変数で設定。
+              var author = item.Item.author;//取得してくる要素のItemkeyの著者名を変数で設定。
+              var publisherName = item.Item.publisherName;//取得してくる要素のItemkeyの出版社名を変数で設定。
+                list += "<li class='lists__item'>" +//JQUERYでリストを処理するため、変数listとしてDOM構造を設定した。
                 "<div class='lists__item__inner'>" +
                 "<a href='" + itemUrl + "'class='lists__item__link' target='_blank'>" +
                 "<img src='" + mediumImageUrl + "' class='lists__item__img' alt>" +
                 "<p class='lists__item__detail'>作品名：　" + title + '</p>' +
                 "<p class='lists__item__detail'>作者　：　" + author + '</p>' +
-                "<p class='lists__item__detail'>出版社：　" + publisherName + '</p>' + '</a>' +'</div>' + '</li>');
-              $('ul').prepend(list);
-            })
-          } else {
-            $("ul").empty();
-            $('.lists').before('<div class="coment"></div>')
-            coment = $('.coment');
-            coment.html('<p class="message">検索結果が見つかりませんでした。</p>');
+                "<p class='lists__item__detail'>出版社：　" + publisherName + '</p>' + '</a>' +'</div>' + '</li>';
+              });
+              // <li class='lists__item'>
+              //   <div class='lists__item__inner'>
+              //    <a href=itemUrl　class=lists__item__link target='_blank'>
+              //       <img src=mediumImageUrl class='lists__item__img' alt>
+              //         <p class='lists__item__detail'>作品名：title</p> +
+              //         <p class='lists__item__detail'>作者　：author</p> +
+              //         <p class='lists__item__detail'>出版社：publisherName </p>
+              //    ＜a>
+              //  </div>
+              // </li>
+              $('.lists').prepend(list);//eachで連続して取得しているものを前にまとめて表示するためにeachの関数の外に出した。each内にあると、一軒ずつの表示をするため、表示順番が変わってしまう。
+
+          } else {//検索して帰ってきたcount値が0の時
+          $('.lists').before('<div class="coment"></div>')//listに表示されている本よりも前に出したいので、beforeメソッドをしよう。
+          coment = $('.coment');//変数コメントに対して、上で作成したclassをしようするため、クエリセレクターを使用。
+          coment.html('<p class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>');//comentに対して、エラーメッセージを出すために先ほど作成したdivタグの中にpタグで文章を挿入。
+        }
+        }).fail(function(response) {//出力失敗の時のエラー
+          if(response.status === 429) { //「検索する」を連打したとき、
+              $('.lists').before('<div class = "coment"></div>');
+              coment = $('.coment');
+              coment.html('<p class="message">検索ボタンは連打せず再度検索ください。</p>');
+              $("ul").empty();//連打した時のみlistが消えないため、ここにも設置しました。
+            }
+          // if (navigator.onLine === true) {　　この書き方でかけないのか？
+          if (response.statusText == "Bad Request") {//Bad Request帰ってくる時
+            if(response.status === 400) {
+              if( keyword.length === 0) {// 検索ワードの指定がないとき
+                $('.lists').before('<div class = "coment"></div>');
+                coment = $('.coment');
+                coment.html('<p class="message">ワードを打ち込んで検索してください。</p>');
+              }
+              if(keyword.length > 0 && keyword.length < 2) {// 検索ワードが半角英数字1文字のとき
+                $('.lists').before('<div class = "coment"></div>');
+                coment = $('.coment');
+                coment.html('<p class="message">2文字以上のワードを入力してください。</p>');
+              }
+            }
+            if(response.status === 404) {//検索ワードが見つからない時
+              $('.lists').before('<div class = "coment"></div>');
+              coment = $('.coment');
+              coment.html('<p class="message">対象の商品が見つかりません。<br>再度違うワードで検索ください。</p>');
+            }
+            // } else if(navigator.onLine === false) {　　この書き方でかけないのか？
+          } else if(response.statusText === "error") {//　ネットが切れている時
+              $('.lists').before('<div class = "coment"></div>');
+              coment = $('.coment');
+              coment.html('<p class="message">ネットが繋がっていません。<br>ネット環境を確認して再度検索してください。</p>');
           }
-      });
-     });
-    });
+          })
+        });
+       });
+          // 文字が入力されていない時
+          // / if ( str.indexOf(keyword) != -1) {//何も入力していない場合。
+          //   $('.lists').before('<div class="coment"></div>')
+          //   coment = $('.coment');
+          //   coment.html('<p class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>');
+          //   console.log(coment);
+          // }
+
+
+
+        // 通信が失敗した時
+        // .fail( function(data) {
+        //   // if($('#js-search-button').click(function(){
+        //   //   $('search__text__input').none
+        //   $('.lists').before('<div class="coment"></div>')
+        //     coment = $('.coment');
+        //     coment.html('<p class="message">通信失敗</p>');
+        //     console.log(coment);
+        //     console.log(data);
+        // });
       // [使うメソッド]
       // $.each(配列, function functionName() {}) 配列に対しての繰り返し処理
       // $.ajax({}) 外部ファイルやURLに対してデータをリクエストすることができます。
